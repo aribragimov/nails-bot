@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------------------
+// State
+// -------------------------------------------------------------------------
+
+model State {
+  id String @id @default(uuid())
+
+  chatId  Int
+  isAwait Boolean @default(true)
+  path    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([chatId])
+  @@map("states")
+}
+
+// -------------------------------------------------------------------------
+// Window
+// -------------------------------------------------------------------------
+model Window {
+  id String @id @default(uuid())
+
+  date DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date])
+  @@map("windows")
+}
