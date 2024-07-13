@@ -1,4 +1,4 @@
-import { start } from './start';
+import { start } from '../domains/start';
 import { createWindow } from '../domains/window';
 import { createWindowRegex } from '../domains/window/regex';
 import { Context } from '..';

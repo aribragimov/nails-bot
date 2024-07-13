@@ -1,2 +1,2 @@
-export * from './message-handler';
-export * from './callback-query-handler';
+export * from './message.handler';
+export * from './callback-query.handler';

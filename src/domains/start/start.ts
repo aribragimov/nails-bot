@@ -1,6 +1,6 @@
 import { adminIds } from '../../config';
-import { adminOptions } from '../options';
-import { clientOptions } from '../options/client.options';
+import { adminOptions } from '../../handlers/options';
+import { clientOptions } from '../../handlers/options/client.options';
 import { Context } from '../..';
 
 export async function start(

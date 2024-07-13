@@ -1,2 +1,2 @@
 export * from './admin.config';
-export * from './timexone.config';
+export * from './timezone.config';
