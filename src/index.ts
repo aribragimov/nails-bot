@@ -6,11 +6,21 @@ import { callbackQueryHandler } from './handlers/callback-query-handler';
 
 const prisma = new PrismaClient();
 
+export interface Context {
+  prisma: PrismaClient;
+  bot: TelegramApi;
+}
+
 async function start() {
   config();
 
   const token = process.env.BOT_TOKEN!;
   const bot = new TelegramApi(token, { polling: true });
+
+  const context: Context = {
+    prisma,
+    bot,
+  };
 
   await bot.setMyCommands([
     {
@@ -19,8 +29,8 @@ async function start() {
     },
   ]);
 
-  messageHandler(bot);
-  callbackQueryHandler(bot);
+  messageHandler(context);
+  callbackQueryHandler(context);
 }
 
 start()

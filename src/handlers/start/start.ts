@@ -1,27 +1,28 @@
-import TelegramApi from 'node-telegram-bot-api';
 import { adminIds } from '../../config';
 import { adminOptions } from '../options';
 import { clientOptions } from '../options/client.options';
-import { PrismaClient } from '@prisma/client';
+import { Context } from '../..';
 
-const prisma = new PrismaClient();
+export async function start(
+  context: Context,
 
-export async function start(bot: TelegramApi, chatId: number) {
-  await prisma.state.delete({
+  chatId: number,
+) {
+  await context.prisma.state.delete({
     where: {
       chatId,
     },
   });
 
   if (adminIds.includes(chatId)) {
-    return bot.sendMessage(
+    return context.bot.sendMessage(
       chatId,
       'Добро пожаловать в тестовую версию бота, выберите что вы хотите сделать',
       adminOptions,
     );
   }
 
-  bot.sendMessage(
+  context.bot.sendMessage(
     chatId,
     'Добро пожаловать в тестовую версию бота, выберите что вы хотите сделать',
     clientOptions,

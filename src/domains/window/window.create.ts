@@ -1,22 +1,19 @@
-import { PrismaClient } from '@prisma/client';
-import TelegramApi from 'node-telegram-bot-api';
 import { DateTime } from 'luxon';
 import { timezone } from '../../config';
-
-const prisma = new PrismaClient();
+import { Context } from '../..';
 
 export async function createWindow(
-  bot: TelegramApi,
+  context: Context,
   chatId: number,
   text: string,
 ) {
   const parsedDates = parseDates(text);
 
   if (!parsedDates.length) {
-    bot.sendMessage(chatId, 'Окошки не созданы');
+    context.bot.sendMessage(chatId, 'Окошки не созданы');
   }
 
-  const createdWindows = await prisma.window.createManyAndReturn({
+  const createdWindows = await context.prisma.window.createManyAndReturn({
     data: parsedDates.map((parsedDate) => ({ date: parsedDate })),
     select: { date: true },
   });
@@ -25,7 +22,9 @@ export async function createWindow(
     createdWindows.map((createdWindow) => createdWindow.date),
   );
 
-  results.forEach(async (result) => await bot.sendMessage(chatId, result));
+  results.forEach(
+    async (result) => await context.bot.sendMessage(chatId, result),
+  );
 }
 
 function parseDates(text: string): Date[] {
@@ -94,7 +93,7 @@ function buildResponse(dates: Date[]): string[] {
 }
 
 export function windowCreateMonth(
-  bot: TelegramApi,
+  context: Context,
   chatId: number,
   route: string,
 ) {
@@ -110,7 +109,7 @@ export function windowCreateMonth(
       { text: value.toString(), callback_data: route + `/day=${value}` },
     ]);
 
-  return bot.sendMessage(chatId, 'Выберите день', {
+  return context.bot.sendMessage(chatId, 'Выберите день', {
     reply_markup: {
       inline_keyboard: [
         [{ callback_data: '/window/create', text: '<<--' }],

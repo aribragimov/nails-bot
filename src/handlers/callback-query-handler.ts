@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-import TelegramApi from 'node-telegram-bot-api';
 import { getWindowsOptions } from '../domains/window/options';
 import { DateTime } from 'luxon';
 import { getMonthName } from '../helpers';
@@ -9,27 +7,27 @@ import {
 } from '../domains/window/regex';
 import { windowCreateMonth } from '../domains/window';
 import { start } from './start';
+import { Context } from '..';
 
-const prisma = new PrismaClient();
-export function callbackQueryHandler(bot: TelegramApi) {
-  bot.on('callback_query', async (msg) => {
+export function callbackQueryHandler(context: Context) {
+  context.bot.on('callback_query', async (msg) => {
     console.log(msg);
     const chatId = msg.from.id;
     const path = msg.data;
 
-    await bot.answerCallbackQuery(msg.id);
+    await context.bot.answerCallbackQuery(msg.id);
 
     if (path) {
       if (path === '/start') {
-        return start(bot, chatId);
+        return start(context, chatId);
       } else if (path === '/window/create/many') {
-        await prisma.state.upsert({
+        await context.prisma.state.upsert({
           where: { chatId },
           create: { chatId },
           update: { updatedAt: new Date() },
         });
 
-        return bot.sendMessage(
+        return context.bot.sendMessage(
           chatId,
           `Пришлите одно или несколько окошек в формате:\nчисло\\.месяц: часы:минуты, часы:минуты\n\nПример:\n01\\.01: 10:00, 11:00, 12:00\n02\\.01: 16:35, 18:20, 19:00`,
           { parse_mode: 'MarkdownV2' },
@@ -40,7 +38,7 @@ export function callbackQueryHandler(bot: TelegramApi) {
         const thisMonth = dateNow.month;
         const nextMonth = thisMonth + 1;
 
-        return bot.sendMessage(chatId, 'Выберите месяц', {
+        return context.bot.sendMessage(chatId, 'Выберите месяц', {
           reply_markup: {
             inline_keyboard: [
               [{ callback_data: '/start', text: '<<--' }],
@@ -60,13 +58,17 @@ export function callbackQueryHandler(bot: TelegramApi) {
           },
         });
       } else if (windowCreateMonthRegex.test(path)) {
-        return windowCreateMonth(bot, chatId, path);
+        return windowCreateMonth(context, chatId, path);
       } else if (windowCreateMonthDayRegex.test(path)) {
       } else if (path === '/window/get') {
-        return bot.sendMessage(chatId, 'Выберите период', getWindowsOptions);
+        return context.bot.sendMessage(
+          chatId,
+          'Выберите период',
+          getWindowsOptions,
+        );
       }
     }
 
-    return bot.sendMessage(chatId, 'Undefined ');
+    return context.bot.sendMessage(chatId, 'Undefined ');
   });
 }
