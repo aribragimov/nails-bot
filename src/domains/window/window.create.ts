@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { timezone } from '../../config';
 import { Context } from '../..';
-import { getMonthName } from '../../helpers';
+import { addBackButton, getMonthName } from '../../helpers';
 
 // ---------------------------------------------------------------------------------------------------
 // Message handler
@@ -124,7 +124,7 @@ export function windowCreate(context: Context, chatId: number) {
   return context.bot.sendMessage(chatId, 'Выберите месяц', {
     reply_markup: {
       inline_keyboard: [
-        [{ callback_data: '/start', text: '<<--' }],
+        addBackButton('/start'),
         [
           {
             text: getMonthName(thisMonth),
@@ -147,6 +147,44 @@ export function windowCreateMonth(
   chatId: number,
   path: string,
 ) {
+  const windowMonth = Number(path.split('month=')[1]);
+
+  const dateNow = DateTime.now();
+
+  let days: { text: string; callback_data: string }[][];
+
+  if (windowMonth === dateNow.month) {
+    days = Array.from(Array(dateNow.daysInMonth))
+      .map((_, i) => i)
+      .splice(dateNow.day)
+      .map((value) => [
+        { text: value.toString(), callback_data: path + `/day=${value}` },
+      ]);
+  } else {
+    const windowDate = DateTime.fromObject({
+      year: dateNow.year,
+      month: windowMonth,
+    });
+
+    days = Array.from(Array(windowDate.daysInMonth))
+      .map((_, i) => i)
+      .map((value) => [
+        { text: value.toString(), callback_data: path + `/day=${value}` },
+      ]);
+  }
+
+  return context.bot.sendMessage(chatId, 'Выберите день', {
+    reply_markup: {
+      inline_keyboard: [addBackButton('/window/create'), ...days],
+    },
+  });
+}
+
+export function windowCreateMonthDay(
+  context: Context,
+  chatId: number,
+  path: string,
+) {
   const dateNow = DateTime.fromJSDate(new Date());
 
   const monthLength = dateNow.daysInMonth;
@@ -161,10 +199,7 @@ export function windowCreateMonth(
 
   return context.bot.sendMessage(chatId, 'Выберите день', {
     reply_markup: {
-      inline_keyboard: [
-        [{ callback_data: '/window/create', text: '<<--' }],
-        ...days,
-      ],
+      inline_keyboard: [addBackButton('/window/create'), ...days],
     },
   });
 }
