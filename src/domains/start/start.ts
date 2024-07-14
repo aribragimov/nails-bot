@@ -25,14 +25,14 @@ export async function start(
   if (adminIds.includes(chatId)) {
     return context.bot.sendMessage(
       chatId,
-      'Добро пожаловать в тестовую версию бота, выберите что вы хотите сделать',
+      'Добро пожаловать в тестовую версию бота,\n выберите что вы хотите сделать:',
       adminOptions,
     );
   }
 
   context.bot.sendMessage(
     chatId,
-    'Добро пожаловать в тестовую версию бота, выберите что вы хотите сделать',
+    'Добро пожаловать в тестовую версию бота,\n выберите что вы хотите сделать:',
     clientOptions,
   );
 }

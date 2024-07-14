@@ -5,10 +5,11 @@ import {
   windowCreateMonthRegex,
 } from '../domains/window/regex';
 import {
-  windowCreate,
+  windowCreateOne,
   windowCreateMany,
   windowCreateMonth,
   windowCreateMonthDay,
+  windowCreate,
 } from '../domains/window';
 import { start } from '../domains/start';
 import { Context } from '..';
@@ -25,10 +26,12 @@ export function callbackQueryHandler(context: Context) {
     if (path) {
       if (path === '/start') {
         return start(context, chatId);
-      } else if (path === '/window/create/many') {
-        return windowCreateMany(context, chatId);
       } else if (path === '/window/create') {
         return windowCreate(context, chatId);
+      } else if (path === '/window/create/many') {
+        return windowCreateMany(context, chatId);
+      } else if (path === '/window/create/one') {
+        return windowCreateOne(context, chatId);
       } else if (windowCreateMonthRegex.test(path)) {
         return windowCreateMonth(context, chatId, path);
       } else if (windowCreateMonthDayRegex.test(path)) {

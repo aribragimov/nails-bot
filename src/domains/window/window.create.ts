@@ -154,6 +154,27 @@ function buildResponse(dates: Date[]): string[] {
 // ---------------------------------------------------------------------------------------------------
 // Callback query handler
 // ---------------------------------------------------------------------------------------------------
+export async function windowCreate(context: Context, chatId: number) {
+  return context.bot.sendMessage(chatId, `Выберите действие`, {
+    reply_markup: {
+      inline_keyboard: [
+        addBackButton('/start'),
+        [
+          {
+            callback_data: '/window/create/one',
+            text: 'Добавить окошки на один день',
+          },
+        ],
+        [
+          {
+            callback_data: '/window/create/many',
+            text: 'Добавить окошки на разные даты',
+          },
+        ],
+      ],
+    },
+  });
+}
 
 export async function windowCreateMany(context: Context, chatId: number) {
   await context.prisma.state.upsert({
@@ -169,7 +190,7 @@ export async function windowCreateMany(context: Context, chatId: number) {
   );
 }
 
-export function windowCreate(context: Context, chatId: number) {
+export function windowCreateOne(context: Context, chatId: number) {
   const dateNow = DateTime.fromJSDate(new Date());
 
   const thisMonth = dateNow.month;
@@ -231,7 +252,7 @@ export function windowCreateMonth(
     reply_markup: {
       inline_keyboard: [
         ...splitDaysOnWeek(allDays),
-        addBackButton('/window/create'),
+        addBackButton('/window/create/one'),
       ],
     },
   });
@@ -246,7 +267,7 @@ export async function windowCreateMonthDay(
 
   return context.bot.sendMessage(
     chatId,
-    'Пришлите время окошек в формате:\n10:00, 11:00, 12:00,\n',
+    'Пришлите время окошек в формате:\n10:00, 11:00, 12:00\n',
   );
 }
 
