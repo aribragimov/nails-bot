@@ -12,6 +12,7 @@ import {
 } from '../domains/window';
 import { start } from '../domains/start';
 import { Context } from '..';
+import { windowGetAll } from '../domains/window/window.get';
 
 export function callbackQueryHandler(context: Context) {
   context.bot.on('callback_query', async (msg) => {
@@ -32,12 +33,8 @@ export function callbackQueryHandler(context: Context) {
         return windowCreateMonth(context, chatId, path);
       } else if (windowCreateMonthDayRegex.test(path)) {
         return windowCreateMonthDay(context, chatId, path);
-      } else if (path === '/window/get') {
-        return context.bot.sendMessage(
-          chatId,
-          'Выберите период',
-          getWindowsOptions,
-        );
+      } else if (path === '/window/get/all') {
+        return windowGetAll(context, chatId);
       }
     }
 
