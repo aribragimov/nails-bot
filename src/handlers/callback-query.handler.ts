@@ -1,5 +1,3 @@
-import { getWindowsOptions } from '../domains/window/options';
-
 import {
   windowCreateMonthDayRegex,
   windowCreateMonthRegex,
@@ -13,7 +11,13 @@ import {
 } from '../domains/window';
 import { start } from '../domains/start';
 import { Context } from '..';
-import { windowGetAll } from '../domains/window/window.get';
+import {
+  windowGet,
+  windowGetAll,
+  windowGetMonth,
+  windowGetToday,
+  windowGetWeek,
+} from '../domains/window/window.get';
 
 export function callbackQueryHandler(context: Context) {
   context.bot.on('callback_query', async (msg) => {
@@ -36,8 +40,16 @@ export function callbackQueryHandler(context: Context) {
         return windowCreateMonth(context, chatId, path);
       } else if (windowCreateMonthDayRegex.test(path)) {
         return windowCreateMonthDay(context, chatId, path);
+      } else if (path === '/window/get') {
+        return windowGet(context, chatId);
       } else if (path === '/window/get/all') {
         return windowGetAll(context, chatId);
+      } else if (path === '/window/get/today') {
+        return windowGetToday(context, chatId);
+      } else if (path === '/window/get/week') {
+        return windowGetWeek(context, chatId);
+      } else if (path === '/window/get/month') {
+        return windowGetMonth(context, chatId);
       }
     }
 

@@ -12,58 +12,70 @@ export async function createWindowMany(
   chatId: number,
   text: string,
 ) {
-  const uniqueDates: Record<string, Date> = {};
-  const lines = text.split('\n');
-  const currentYear = DateTime.now().year;
+  try {
+    const uniqueDates: Record<string, Date> = {};
+    const lines = text.split('\n');
+    const currentYear = DateTime.now().year;
 
-  lines.forEach((line) => {
-    const [datePart, timesPart] = line.split(': ');
-    if (datePart && timesPart) {
-      const [day, month] = datePart.split('.');
-      const times = timesPart.split(', ');
+    lines.forEach((line) => {
+      const [datePart, timesPart] = line.split(': ');
+      if (datePart && timesPart) {
+        const [day, month] = datePart.split('.');
+        const times = timesPart.split(', ');
 
-      times.forEach((time) => {
-        const [hours, minutes] = time.split(':');
-        const dateObj = DateTime.fromObject(
-          {
-            year: currentYear,
-            month: parseInt(month),
-            day: parseInt(day),
-            hour: parseInt(hours),
-            minute: parseInt(minutes),
-          },
-          timezone,
-        ).toJSDate();
+        times.forEach((time) => {
+          const [hours, minutes] = time.split(':');
+          const dateObj = DateTime.fromObject(
+            {
+              year: currentYear,
+              month: parseInt(month),
+              day: parseInt(day),
+              hour: parseInt(hours),
+              minute: parseInt(minutes),
+            },
+            timezone,
+          ).toJSDate();
 
-        const dateKey = dateObj.toISOString();
+          const dateKey = dateObj.toISOString();
 
-        if (!uniqueDates[dateKey]) {
-          uniqueDates[dateKey] = dateObj;
-        }
+          if (!uniqueDates[dateKey]) {
+            uniqueDates[dateKey] = dateObj;
+          }
+        });
+      }
+    });
+
+    const parsedDates = Object.values(uniqueDates);
+
+    if (!parsedDates.length) {
+      await context.bot.sendMessage(chatId, 'Окошки не созданы');
+    }
+
+    const createdWindows = await context.prisma.window.createManyAndReturn({
+      data: parsedDates.map((parsedDate) => ({ date: parsedDate })),
+      select: { date: true },
+    });
+
+    const results = buildResponse(
+      createdWindows.map((createdWindow) => createdWindow.date),
+    );
+
+    for await (const result of results) {
+      await context.bot.sendMessage(chatId, result);
+    }
+
+    await context.prisma.state.delete({ where: { chatId } });
+  } catch (e) {
+    const state = await context.prisma.state.findUnique({
+      where: { chatId },
+    });
+
+    if (state) {
+      await context.prisma.state.delete({
+        where: { chatId },
       });
     }
-  });
-
-  const parsedDates = Object.values(uniqueDates);
-
-  if (!parsedDates.length) {
-    context.bot.sendMessage(chatId, 'Окошки не созданы');
   }
-
-  const createdWindows = await context.prisma.window.createManyAndReturn({
-    data: parsedDates.map((parsedDate) => ({ date: parsedDate })),
-    select: { date: true },
-  });
-
-  const results = buildResponse(
-    createdWindows.map((createdWindow) => createdWindow.date),
-  );
-
-  results.forEach(
-    async (result) => await context.bot.sendMessage(chatId, result),
-  );
-
-  context.prisma.state.delete({ where: { chatId } });
 }
 
 export async function createWindow(
@@ -72,54 +84,66 @@ export async function createWindow(
   text: string,
   path: string,
 ) {
-  const uniqueDates: Record<string, Date> = {};
-  const currentYear = DateTime.now().year;
+  try {
+    const uniqueDates: Record<string, Date> = {};
+    const currentYear = DateTime.now().year;
 
-  const month = path.split('/')[3].split('=')[1];
-  const day = path.split('/')[4].split('=')[1];
+    const month = path.split('/')[3].split('=')[1];
+    const day = path.split('/')[4].split('=')[1];
 
-  const times = text.split(', ');
+    const times = text.split(', ');
 
-  times.forEach((time) => {
-    const [hours, minutes] = time.split(':');
-    const dateObj = DateTime.fromObject(
-      {
-        year: currentYear,
-        month: parseInt(month),
-        day: parseInt(day),
-        hour: parseInt(hours),
-        minute: parseInt(minutes),
-      },
-      timezone,
-    ).toJSDate();
+    times.forEach((time) => {
+      const [hours, minutes] = time.split(':');
+      const dateObj = DateTime.fromObject(
+        {
+          year: currentYear,
+          month: parseInt(month),
+          day: parseInt(day),
+          hour: parseInt(hours),
+          minute: parseInt(minutes),
+        },
+        timezone,
+      ).toJSDate();
 
-    const dateKey = dateObj.toISOString();
+      const dateKey = dateObj.toISOString();
 
-    if (!uniqueDates[dateKey]) {
-      uniqueDates[dateKey] = dateObj;
+      if (!uniqueDates[dateKey]) {
+        uniqueDates[dateKey] = dateObj;
+      }
+    });
+
+    const parsedDates = Object.values(uniqueDates);
+
+    if (!parsedDates.length) {
+      await context.bot.sendMessage(chatId, 'Окошки не созданы');
     }
-  });
 
-  const parsedDates = Object.values(uniqueDates);
+    const createdWindows = await context.prisma.window.createManyAndReturn({
+      data: parsedDates.map((parsedDate) => ({ date: parsedDate })),
+      select: { date: true },
+    });
 
-  if (!parsedDates.length) {
-    context.bot.sendMessage(chatId, 'Окошки не созданы');
+    const results = buildResponse(
+      createdWindows.map((createdWindow) => createdWindow.date),
+    );
+
+    results.forEach(
+      async (result) => await context.bot.sendMessage(chatId, result),
+    );
+
+    await context.prisma.state.delete({ where: { chatId } });
+  } catch (e) {
+    const state = await context.prisma.state.findUnique({
+      where: { chatId },
+    });
+
+    if (state) {
+      await context.prisma.state.delete({
+        where: { chatId },
+      });
+    }
   }
-
-  const createdWindows = await context.prisma.window.createManyAndReturn({
-    data: parsedDates.map((parsedDate) => ({ date: parsedDate })),
-    select: { date: true },
-  });
-
-  const results = buildResponse(
-    createdWindows.map((createdWindow) => createdWindow.date),
-  );
-
-  results.forEach(
-    async (result) => await context.bot.sendMessage(chatId, result),
-  );
-
-  await context.prisma.state.delete({ where: { chatId } });
 }
 
 function buildResponse(dates: Date[]): string[] {
@@ -142,8 +166,8 @@ function buildResponse(dates: Date[]): string[] {
   );
 
   for (const [dayMonth, times] of Object.entries(groupedDates)) {
-    let preResult = `${dayMonth}:\n`;
-    preResult += times.map((time) => `  ${time}`).join('\n');
+    let preResult = `${dayMonth}: `;
+    preResult += times.map((time) => `  ${time}`).join(',');
 
     result.push(preResult.trim());
   }

@@ -10,7 +10,7 @@ export const adminOptions: SendMessageOptions = {
         },
       ],
 
-      [{ callback_data: '/window/get/all', text: 'Посмотреть окошки' }],
+      [{ callback_data: '/window/get', text: 'Посмотреть окошки' }],
       // [{ callback_data: '/window/update', text: 'Обновить окошко' }],
       // [{ callback_data: '/window/delete', text: 'Удалить окошко' }],
     ],

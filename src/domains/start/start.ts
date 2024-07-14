@@ -30,7 +30,7 @@ export async function start(
     );
   }
 
-  context.bot.sendMessage(
+  await context.bot.sendMessage(
     chatId,
     'Добро пожаловать в тестовую версию бота,\n выберите что вы хотите сделать:',
     clientOptions,
