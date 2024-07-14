@@ -1,6 +1,5 @@
 import { getWindowsOptions } from '../domains/window/options';
-import { DateTime } from 'luxon';
-import { getMonthName } from '../helpers';
+
 import {
   windowCreateMonthDayRegex,
   windowCreateMonthRegex,
@@ -9,15 +8,16 @@ import {
   windowCreate,
   windowCreateMany,
   windowCreateMonth,
+  windowCreateMonthDay,
 } from '../domains/window';
 import { start } from '../domains/start';
 import { Context } from '..';
 
 export function callbackQueryHandler(context: Context) {
   context.bot.on('callback_query', async (msg) => {
-    console.log(msg);
     const chatId = msg.from.id;
     const path = msg.data;
+    console.log('callbackQueryHandler: ', path);
 
     await context.bot.answerCallbackQuery(msg.id);
 
@@ -31,6 +31,7 @@ export function callbackQueryHandler(context: Context) {
       } else if (windowCreateMonthRegex.test(path)) {
         return windowCreateMonth(context, chatId, path);
       } else if (windowCreateMonthDayRegex.test(path)) {
+        return windowCreateMonthDay(context, chatId, path);
       } else if (path === '/window/get') {
         return context.bot.sendMessage(
           chatId,

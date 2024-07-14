@@ -8,11 +8,19 @@ export async function start(
 
   chatId: number,
 ) {
-  await context.prisma.state.delete({
+  const checkState = await context.prisma.state.findUnique({
     where: {
       chatId,
     },
   });
+
+  if (checkState) {
+    await context.prisma.state.delete({
+      where: {
+        chatId,
+      },
+    });
+  }
 
   if (adminIds.includes(chatId)) {
     return context.bot.sendMessage(
