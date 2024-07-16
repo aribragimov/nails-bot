@@ -1,16 +1,13 @@
 import { DateTime } from 'luxon';
 import { Context } from '../..';
-import { getWindowsOptions } from './options';
-
-// ---------------------------------------------------------------------------------------------------
-// Message handler
-// ---------------------------------------------------------------------------------------------------
+import { windowGetOptions } from './options/get.options';
 
 // ---------------------------------------------------------------------------------------------------
 // Callback query handler
 // ---------------------------------------------------------------------------------------------------
+
 export async function windowGet(context: Context, chatId: number) {
-  await context.bot.sendMessage(chatId, 'Выберите действие', getWindowsOptions);
+  await context.bot.sendMessage(chatId, 'Выберите действие', windowGetOptions);
 }
 
 export async function windowGetToday(context: Context, chatId: number) {
@@ -28,7 +25,7 @@ export async function windowGetToday(context: Context, chatId: number) {
 
   const results = buildResponse(windows.map((window) => window.date));
 
-  await context.bot.sendMessage(chatId, 'Окошки на сегодня:\n' + results);
+  await context.bot.sendMessage(chatId, 'Окошки на сегодня:\n\n' + results);
 }
 
 export async function windowGetWeek(context: Context, chatId: number) {
@@ -46,7 +43,25 @@ export async function windowGetWeek(context: Context, chatId: number) {
 
   const results = buildResponse(windows.map((window) => window.date));
 
-  await context.bot.sendMessage(chatId, 'Окошки на этой неделе:\n' + results);
+  await context.bot.sendMessage(chatId, 'Окошки на этой неделе:\n\n' + results);
+}
+
+export async function windowGetNextWeek(context: Context, chatId: number) {
+  const dt = DateTime.now().plus({ week: 1 });
+
+  const startDate = dt.startOf('week').toJSDate();
+  const endDate = dt.endOf('week').toJSDate();
+
+  const windows = await context.prisma.window.findMany({
+    where: {
+      date: { gte: startDate, lte: endDate },
+    },
+    orderBy: { date: 'asc' },
+  });
+
+  const results = buildResponse(windows.map((window) => window.date));
+
+  await context.bot.sendMessage(chatId, 'Окошки на этой неделе:\n\n' + results);
 }
 
 export async function windowGetMonth(context: Context, chatId: number) {
@@ -64,7 +79,7 @@ export async function windowGetMonth(context: Context, chatId: number) {
 
   const results = buildResponse(windows.map((window) => window.date));
 
-  await context.bot.sendMessage(chatId, 'Окошки на этот месяц:\n' + results);
+  await context.bot.sendMessage(chatId, 'Окошки на этот месяц:\n\n' + results);
 }
 
 export async function windowGetAll(context: Context, chatId: number) {
@@ -79,7 +94,7 @@ export async function windowGetAll(context: Context, chatId: number) {
 
   const results = buildResponse(windows.map((window) => window.date));
 
-  await context.bot.sendMessage(chatId, 'Все:\n' + results);
+  await context.bot.sendMessage(chatId, 'Все:\n\n' + results);
 }
 
 function buildResponse(dates: Date[]): string {

@@ -10,6 +10,6 @@ export const createWindowRegex = /(\d{2}:\d{2},\s)*\d{2}:\d{2}/;
 // Callback query handler
 // ---------------------------------------------------------------------------------------------------
 
-export const windowCreateMonthRegex = /^\/window\/create\/month=(\d{1,2})$/;
+export const windowCreateMonthRegex = /^\/win\/c\/month\/(\d{1,2})$/;
 export const windowCreateMonthDayRegex =
-  /^\/window\/create\/month=(\d{1,2})\/day=(\d{1,2})$/;
+  /^\/win\/c\/month\/(\d{1,2})\/day\/(\d{1,2})$/;

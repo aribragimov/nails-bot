@@ -1,5 +1,5 @@
 import { adminIds } from '../../config';
-import { adminOptions } from '../../handlers/options';
+import { adminOptions } from '../../handlers/options/admin.options';
 import { clientOptions } from '../../handlers/options/client.options';
 import { Context } from '../..';
 

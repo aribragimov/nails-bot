@@ -1,7 +1,7 @@
 import TelegramApi from 'node-telegram-bot-api';
 import { config } from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { messageHandler } from './handlers';
+import { messageHandler } from './handlers/message.handler';
 import { callbackQueryHandler } from './handlers/callback-query.handler';
 
 const prisma = new PrismaClient();

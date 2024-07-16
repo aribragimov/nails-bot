@@ -2,14 +2,14 @@
 
 
 __
-/window/create/month=1 regex 
+/window/c/month=1 regex 
 
-/window/create/month=1/day=1
-/window/create/month=1/day=2
+/window/c/month=1/day=1
+/window/c/month=1/day=2
 /...
 __ 
 
-/window/create/month=1/day=1 regex 
+/window/c/month=1/day=1 regex 
 
 prisma.state.create(chatId, path) 
 

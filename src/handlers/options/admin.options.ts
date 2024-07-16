@@ -5,14 +5,20 @@ export const adminOptions: SendMessageOptions = {
     inline_keyboard: [
       [
         {
-          callback_data: '/window/create',
+          callback_data: '/win/create',
           text: 'Добавить окошки',
         },
       ],
 
-      [{ callback_data: '/window/get', text: 'Посмотреть окошки' }],
-      // [{ callback_data: '/window/update', text: 'Обновить окошко' }],
-      // [{ callback_data: '/window/delete', text: 'Удалить окошко' }],
+      [{ callback_data: '/win/get', text: 'Посмотреть окошки' }],
+      [
+        {
+          callback_data: '/win/update',
+          text: 'Обновить окошко',
+        },
+      ],
+      // [{ callback_data: '/win/update', text: 'Обновить окошко' }],
+      // [{ callback_data: '/win/delete', text: 'Удалить окошко' }],
     ],
   },
 };

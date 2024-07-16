@@ -1,7 +1,10 @@
 import { DateTime } from 'luxon';
 import { timezone } from '../../config';
 import { Context } from '../..';
-import { addBackButton, getMonthName } from '../../helpers';
+import { addBackButton } from '../../helpers/add-back-button.helper';
+import { getMonthName } from '../../helpers/month.helper';
+import { windowCreateMonthDayRegex } from './regex/create.regex';
+import { splitDaysOnWeek } from '../../helpers/day.helper';
 
 // ---------------------------------------------------------------------------------------------------
 // Message handler
@@ -13,6 +16,12 @@ export async function createWindowMany(
   text: string,
 ) {
   try {
+    const checkAwait = await context.prisma.state.findUnique({
+      where: { chatId },
+    });
+
+    if (!checkAwait) return;
+
     const uniqueDates: Record<string, Date> = {};
     const lines = text.split('\n');
     const currentYear = DateTime.now().year;
@@ -82,14 +91,24 @@ export async function createWindow(
   context: Context,
   chatId: number,
   text: string,
-  path: string,
 ) {
   try {
+    const checkAwait = await context.prisma.state.findUnique({
+      where: { chatId },
+    });
+
+    if (
+      !checkAwait ||
+      !checkAwait.path ||
+      !windowCreateMonthDayRegex.test(checkAwait.path)
+    )
+      return;
+
     const uniqueDates: Record<string, Date> = {};
     const currentYear = DateTime.now().year;
 
-    const month = path.split('/')[3].split('=')[1];
-    const day = path.split('/')[4].split('=')[1];
+    const month = checkAwait.path.split('/')[3].split('=')[1];
+    const day = checkAwait.path.split('/')[4].split('=')[1];
 
     const times = text.split(', ');
 
@@ -185,13 +204,13 @@ export async function windowCreate(context: Context, chatId: number) {
         addBackButton('/start'),
         [
           {
-            callback_data: '/window/create/one',
+            callback_data: '/win/c/one',
             text: 'Добавить окошки на один день',
           },
         ],
         [
           {
-            callback_data: '/window/create/many',
+            callback_data: '/win/c/many',
             text: 'Добавить окошки на разные даты',
           },
         ],
@@ -227,13 +246,13 @@ export function windowCreateOne(context: Context, chatId: number) {
         [
           {
             text: getMonthName(thisMonth),
-            callback_data: `/window/create/month=${thisMonth}`,
+            callback_data: `/win/c/month/${thisMonth}`,
           },
         ],
         [
           {
             text: getMonthName(nextMonth),
-            callback_data: `/window/create/month=${nextMonth}`,
+            callback_data: `/win/c/month/${nextMonth}`,
           },
         ],
       ],
@@ -246,7 +265,7 @@ export function windowCreateMonth(
   chatId: number,
   path: string,
 ) {
-  const windowMonth = Number(path.split('month=')[1]);
+  const windowMonth = Number(path.split('month/')[1]);
 
   const dateNow = DateTime.now();
 
@@ -258,7 +277,7 @@ export function windowCreateMonth(
       .splice(dateNow.day - 1)
       .map((value) => ({
         text: value.toString(),
-        callback_data: path + `/day=${value}`,
+        callback_data: path + `/day/${value}`,
       }));
   } else {
     const windowDate = DateTime.fromObject({
@@ -268,7 +287,7 @@ export function windowCreateMonth(
 
     allDays = Array.from(Array(windowDate.daysInMonth)).map((_, i) => {
       const value = (i + 1).toString();
-      return { text: value, callback_data: path + `/day=${value}` };
+      return { text: value, callback_data: path + `/day/${value}` };
     });
   }
 
@@ -276,7 +295,7 @@ export function windowCreateMonth(
     reply_markup: {
       inline_keyboard: [
         ...splitDaysOnWeek(allDays),
-        addBackButton('/window/create/one'),
+        addBackButton('/win/c/one'),
       ],
     },
   });
@@ -293,15 +312,4 @@ export async function windowCreateMonthDay(
     chatId,
     'Пришлите время окошек в формате:\n10:00, 11:00, 12:00\n',
   );
-}
-
-function splitDaysOnWeek(allDays: { text: string; callback_data: string }[]) {
-  const splitDays: { text: string; callback_data: string }[][] = [];
-
-  Array.from(Array(5)).map((_, i) => {
-    const index = i * 7;
-    splitDays.push(allDays.slice(index, index + 7));
-  });
-
-  return splitDays;
 }

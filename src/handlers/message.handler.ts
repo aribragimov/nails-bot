@@ -1,10 +1,9 @@
-import { start } from '../domains/start';
-import { createWindow, createWindowMany } from '../domains/window';
-import {
-  createWindowManyRegex,
-  createWindowRegex,
-  windowCreateMonthDayRegex,
-} from '../domains/window/regex';
+import { start } from '../domains/start/start';
+import { createWindow } from '../domains/window/window.create';
+import { createWindowMany } from '../domains/window/window.create';
+
+import { createWindowManyRegex } from '../domains/window/regex/create.regex';
+import { createWindowRegex } from '../domains/window/regex/create.regex';
 import { Context } from '..';
 
 export function messageHandler(context: Context) {
@@ -15,30 +14,10 @@ export function messageHandler(context: Context) {
     if (text) {
       if (text === '/start') {
         return start(context, msg.chat.id);
-      }
-
-      if (createWindowManyRegex.test(text)) {
-        const checkAwait = await context.prisma.state.findUnique({
-          where: { chatId },
-          select: { isAwait: true },
-        });
-
-        if (checkAwait?.isAwait) {
-          return createWindowMany(context, chatId, text);
-        }
+      } else if (createWindowManyRegex.test(text)) {
+        return createWindowMany(context, chatId, text);
       } else if (createWindowRegex.test(text)) {
-        const checkAwait = await context.prisma.state.findUnique({
-          where: { chatId },
-          select: { isAwait: true, path: true },
-        });
-
-        if (
-          checkAwait?.path &&
-          checkAwait?.isAwait &&
-          windowCreateMonthDayRegex.test(checkAwait.path)
-        ) {
-          return createWindow(context, chatId, text, checkAwait.path);
-        }
+        return createWindow(context, chatId, text);
       }
     }
 
